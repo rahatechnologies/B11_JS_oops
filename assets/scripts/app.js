@@ -15,7 +15,45 @@ class Product {
 // const prod = new Product();
 // prod.title = ""
 
-class ShoppingCart {
+class ElementAttribute {
+  constructor(attrName, attrValue) {
+    this.name = attrName;
+    this.value = attrValue;
+  }
+}
+
+// Parent class
+class Component {
+  //  To Do
+  constructor(renderHookId) {
+    this.hookId = renderHookId;
+    this.render();
+  }
+
+  // empty body render method
+  render() {}
+
+  createRootElement(tag, cssClasses, attributes) {
+    const rootElement = document.createElement(tag);
+
+    if (cssClasses) {
+      rootElement.className = cssClasses;
+    }
+
+    if (attributes && attributes.length > 0) {
+      for (const attr of attributes) {
+        rootElement.setAttribute(attr.name, attr.value);
+      }
+    }
+
+    // To do
+    document.getElementById(this.hookId).append(rootElement);
+
+    return rootElement;
+  }
+}
+
+class ShoppingCart extends Component {
   items = [];
 
   //  setters
@@ -38,6 +76,12 @@ class ShoppingCart {
     return sum;
   }
 
+  //  constructor chaining
+  constructor(renderHookId) {
+    // invoke parent constructor
+    super(renderHookId);
+  }
+
   addProduct(product) {
     const updatedItems = [...this.items];
     updatedItems.push(product);
@@ -49,13 +93,14 @@ class ShoppingCart {
   }
 
   render() {
-    const cartEl = document.createElement('section');
+    // const cartEl = document.createElement('section');
+    const cartEl = this.createRootElement('section', 'cart');
     cartEl.innerHTML = `
      <h2>Total: \$${0}</h2>
      <button>Order Now!</button>
     `;
 
-    cartEl.className = 'cart';
+    // cartEl.className = 'cart';
     this.totalOutput = cartEl.querySelector('h2');
 
     //return section element node
@@ -63,9 +108,9 @@ class ShoppingCart {
   }
 }
 
-class ProductItem {
-  constructor(product) {
-    // initializing product through constructor
+class ProductItem extends Component {
+  constructor(product, renderHookId) {
+    super(renderHookId);
     this.product = product;
   }
 
@@ -77,8 +122,9 @@ class ProductItem {
   }
 
   render() {
-    const prodEl = document.createElement('li');
-    prodEl.className = 'product-item';
+    // const prodEl = document.createElement('li');
+    const prodEl = this.createRootElement('li', 'product-item');
+    // prodEl.className = 'product-item';
 
     prodEl.innerHTML = `
       <div>
@@ -99,7 +145,7 @@ class ProductItem {
   }
 }
 
-class ProductList {
+class ProductList extends Component {
   products = [
     new Product(
       'A Pillow',
@@ -116,25 +162,20 @@ class ProductList {
     ),
   ];
 
-  constructor() {}
+  constructor(renderHookId) {
+    super(renderHookId);
+  }
 
   render() {
-    // const renderHook = document.getElementById('app');
-    const prodList = document.createElement('ul');
-    prodList.className = 'product-list';
+    this.createRootElement('ul', 'product-list', [
+      new ElementAttribute('id', 'prod-list'),
+    ]);
 
     for (const prod of this.products) {
-      // Start Single product rendering logic
-      const productItem = new ProductItem(prod);
-      const prodEl = productItem.render();
-      prodList.append(prodEl);
-
-      //   End of single product rendering logic
+      const productItem = new ProductItem(prod, 'prod-list');
+      // productItem.render();
       //   End of For loop
     }
-
-    // renderHook.append(prodList);
-    return prodList;
   }
 }
 
@@ -146,20 +187,11 @@ class Shop {
   // cart;
 
   render() {
-    const renderHook = document.getElementById('app');
+    this.cart = new ShoppingCart('app');
+    // this.cart.render();
 
-    // Question why we are using "this." here ??
-    this.cart = new ShoppingCart();
-
-    //  section element node ( created in shopping Cart render method)
-    const cartEl = this.cart.render();
-
-    const productList = new ProductList();
-
-    const prodListEl = productList.render();
-
-    renderHook.append(cartEl);
-    renderHook.append(prodListEl);
+    const productList = new ProductList('app');
+    // productList.render();
   }
 }
 
